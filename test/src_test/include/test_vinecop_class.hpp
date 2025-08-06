@@ -370,6 +370,64 @@ TEST_F(VinecopTest, rosenblatt_is_correct)
     vinecop.rosenblatt(vinecop.inverse_rosenblatt(u)).isApprox(u, 1e-6));
 }
 
+TEST_F(VinecopTest, scores_stepwise)
+{
+  auto pair_copulas = Vinecop::make_pair_copula_store(7, 3);
+  auto par = Eigen::VectorXd::Constant(1, 3.0);
+  for (auto& tree : pair_copulas) {
+    for (auto& pc : tree) {
+      pc = Bicop(BicopFamily::clayton, 270, par);
+    }
+  }
+  Vinecop vinecop(model_matrix, pair_copulas);
+
+  auto uu = vinecop.simulate(100, false, 1, { 1 });
+
+  auto J = vinecop.hessian_avg(uu, true);
+  EXPECT_TRUE(J.isUpperTriangular());
+  // Eigen::MatrixXd Jinv = J.triangularView<Eigen::Upper>()
+  //                          .solve(Eigen::MatrixXd::Identity(J.cols(),
+  //                          J.cols())) .triangularView<Eigen::Upper>();
+  // // std::cout << J << std::endl << std::endl;
+  // // std::cout << Jinv << std::endl;
+  // auto I = vinecop.scores_cov(uu, true);
+  // std::cout << (Jinv * I * Jinv.transpose() /
+  // u.rows()).diagonal().cwiseSqrt()
+  //           << std::endl
+  //           << std::endl;
+  // std::cout << vinecop.str() << std::endl;
+}
+
+TEST_F(VinecopTest, scores_joint)
+{
+  auto pair_copulas = Vinecop::make_pair_copula_store(7, 3);
+  auto par = Eigen::VectorXd::Constant(1, 3.0);
+  for (auto& tree : pair_copulas) {
+    for (auto& pc : tree) {
+      pc = Bicop(BicopFamily::clayton, 270, par);
+    }
+  }
+  Vinecop vinecop(model_matrix, pair_copulas);
+
+  auto uu = vinecop.simulate(100, false, 1, { 1 });
+  auto J = vinecop.hessian_avg(uu, false);
+  auto I = vinecop.scores_cov(uu, false);
+
+  EXPECT_FALSE(J.isUpperTriangular());
+
+  Eigen::MatrixXd Jinv = J.triangularView<Eigen::Upper>()
+                           .solve(Eigen::MatrixXd::Identity(J.cols(), J.cols()))
+                           .triangularView<Eigen::Upper>();
+  // std::cout << J << std::endl << std::endl;
+  // std::cout << Jinv * I << std::endl;
+  I = vinecop.scores_cov(uu, true);
+  // std::cout << (Jinv * I * Jinv.transpose() /
+  // u.rows()).diagonal().cwiseSqrt()
+  //           << std::endl
+  //           << std::endl;
+  // std::cout << vinecop.str() << std::endl;
+}
+
 TEST_F(VinecopTest, aic_bic_are_correct)
 {
   int d = 7;

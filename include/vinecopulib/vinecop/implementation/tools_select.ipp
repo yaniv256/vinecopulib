@@ -156,6 +156,13 @@ VinecopSelector::make_pair_copula_store(size_t d, size_t trunc_lvl)
 inline void
 VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
   loglik_ = 0.0;
   initialize_new_fit(data);
   for (size_t t = 0; t < d_ - 1; ++t) {
@@ -179,6 +186,15 @@ VinecopSelector::select_all_trees(const Eigen::MatrixXd& data)
 inline void
 VinecopSelector::sparse_select_all_trees(const Eigen::MatrixXd& data)
 {
+  if (d_ == 1) {
+    loglik_ = 0.0;
+    n_ = data.rows();
+    pair_copulas_ = make_pair_copula_store(d_, controls_.get_trunc_lvl());
+    vine_struct_ = RVineStructure(d_);
+    return;
+  }
+  loglik_ = 0.0;
+
   // family set must be reset after each iteration of the threshold search
   auto family_set = controls_.get_family_set();
   double d = static_cast<double>(d_);
