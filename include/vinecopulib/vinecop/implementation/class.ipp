@@ -39,6 +39,15 @@ inline Vinecop::Vinecop(const RVineStructure& structure,
 
   if (pair_copulas.size() > 0) {
     set_all_pair_copulas(pair_copulas);
+  } else {
+    // Initialize with independence copulas for all edges to avoid
+    // segfault when simulate() is called on an empty vine
+    size_t trunc_lvl = rvine_structure_.get_trunc_lvl();
+    pair_copulas_.resize(trunc_lvl);
+    for (size_t t = 0; t < trunc_lvl; ++t) {
+      pair_copulas_[t].resize(d_ - t - 1);
+      // Bicop default constructor creates independence copula
+    }
   }
 
   if (var_types.size() > 0) {
