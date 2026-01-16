@@ -59,7 +59,7 @@ public:
 
   // Serialize
   nlohmann::json to_json() const;
-  void to_file(const std::string& filename) const;
+  void to_file(const std::string& filename, int indent = -1) const;
 
   // Methods modifying structure and/or families and parameters
   void select(const Eigen::MatrixXd& data,

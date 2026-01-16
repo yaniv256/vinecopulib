@@ -135,10 +135,12 @@ file_to_json(const std::string& filename)
 }
 
 inline void
-json_to_file(const std::string& filename, const nlohmann::json& json)
+json_to_file(const std::string& filename,
+             const nlohmann::json& json,
+             int indent = -1)
 {
   std::ofstream file(filename);
-  file << json << std::endl;
+  file << json.dump(indent) << std::endl;  // indent=-1 for compact, >=0 for pretty
 }
 }
 }

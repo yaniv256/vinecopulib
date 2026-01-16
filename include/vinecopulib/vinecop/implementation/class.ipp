@@ -207,24 +207,28 @@ inline Vinecop::Vinecop(const std::string& filename, const bool check)
 inline nlohmann::json
 Vinecop::to_json() const
 {
+  // Serialize all pair copulas, organized by tree level
+  // For a d-dimensional vine, tree t has (d - t - 1) edges
   nlohmann::json pair_copulas;
   for (size_t tree = 0; tree < pair_copulas_.size(); ++tree) {
     nlohmann::json tree_json;
     for (size_t edge = 0; edge < d_ - tree - 1; ++edge) {
+      // Each Bicop serializes its own family, rotation, and parameters
       tree_json["pc" + std::to_string(edge)] =
         pair_copulas_[tree][edge].to_json();
     }
     pair_copulas["tree" + std::to_string(tree)] = tree_json;
   }
 
+  // Build the complete JSON output
   nlohmann::json output;
-  output["pair copulas"] = pair_copulas;
+  output["pair copulas"] = pair_copulas;  // Nested tree/edge structure
   auto structure_json = rvine_structure_.to_json();
-  output["structure"] = structure_json;
+  output["structure"] = structure_json;   // R-vine structure (array + order)
   output["var_types"] = tools_serialization::vector_to_json(var_types_);
-  output["nobs_"] = nobs_;
-  output["threshold"] = threshold_;
-  output["loglik"] = loglik_;
+  output["nobs_"] = nobs_;                // Number of observations used in fit
+  output["threshold"] = threshold_;       // Truncation threshold
+  output["loglik"] = loglik_;             // Log-likelihood of fit
 
   return output;
 }
@@ -241,10 +245,11 @@ Vinecop::to_json() const
 //! pair-copulas.
 //!
 //! @param filename The name of the JSON file to write.
+//! @param indent Indentation level for pretty-printing (-1 for compact, default).
 inline void
-Vinecop::to_file(const std::string& filename) const
+Vinecop::to_file(const std::string& filename, int indent) const
 {
-  tools_serialization::json_to_file(filename, this->to_json());
+  tools_serialization::json_to_file(filename, this->to_json(), indent);
 }
 
 //! @brief Initializes object for storing pair copulas.
